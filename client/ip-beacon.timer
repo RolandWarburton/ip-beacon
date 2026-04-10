@@ -1,0 +1,10 @@
+[Unit]
+Description=Register host IP every 5 minutes
+
+[Timer]
+OnBootSec=10s
+OnUnitActiveSec=5min
+Unit=ip-beacon.service
+
+[Install]
+WantedBy=timers.target

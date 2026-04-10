@@ -1,0 +1,17 @@
+services:
+  ip-registry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ip-beacon:latest
+    container_name: ip-registry
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=8080
+      - DATA_PATH=/app/data/registry.json
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 64M
