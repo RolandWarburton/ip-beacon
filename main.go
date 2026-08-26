@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -112,8 +113,10 @@ func main() {
 		port = "8080"
 	}
 
-	if err := os.MkdirAll("data", 0755); err != nil {
-		log.Fatalf("could not create data dir: %v", err)
+	if dir := filepath.Dir(dataPath); dir != "." {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			log.Fatalf("could not create data dir %s: %v", dir, err)
+		}
 	}
 
 	reg := loadRegistry(dataPath)
