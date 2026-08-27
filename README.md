@@ -35,7 +35,7 @@ docker compose up --build
 ### Client
 
 > [!NOTE]
-> Edit ip-registry.service to set REGISTRY_HOST, then:
+> Edit ip-registry.service to set REGISTRY_HOST to the DOMAIN, then:
 
 To install as a systemd service:
 
