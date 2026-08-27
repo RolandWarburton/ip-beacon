@@ -28,6 +28,7 @@ go run .
 Or with Docker Compose:
 
 ```bash
+cp .env.example .env   # then edit DOMAIN
 docker compose up --build
 ```
 
