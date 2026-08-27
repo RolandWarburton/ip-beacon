@@ -1,0 +1,19 @@
+# Deployment-specific overrides. Compose merges this on top of
+# docker-compose.yaml automatically; it is gitignored, so the base file stays
+# portable. See docker-compose.override.yaml.example.
+services:
+  ip-registry:
+    networks:
+      - services
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.beacon.rule=Host(`${DOMAIN:?DOMAIN is not set}`)"
+      - "traefik.http.routers.beacon.entrypoints=websecure"
+      - "traefik.http.routers.beacon.tls=true"
+      - "traefik.http.routers.beacon.tls.certresolver=letsencrypt"
+      - "traefik.http.services.beacon.loadbalancer.server.port=8080"
+
+networks:
+  services:
+    name: services
+    external: true
