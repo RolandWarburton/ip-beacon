@@ -34,16 +34,6 @@ docker compose up --build
 
 ### Client
 
-## Files
-
-| File | Purpose |
-|---|---|
-| `register.sh` | Posts hostname and IP to the registry |
-| `ip-register.service` | Systemd service that runs `register.sh` |
-| `ip-register.timer` | Systemd timer that triggers the service every 5 minutes |
-| `install.sh` | Installs and enables the service and timer |
-
-
 > [!NOTE]
 > Edit ip-registry.service to set REGISTRY_HOST, then:
 
