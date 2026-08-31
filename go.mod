@@ -1,3 +1,3 @@
-module ip-registry
+module beacon
 
 go 1.26.1

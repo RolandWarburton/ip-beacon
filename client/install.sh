@@ -1,31 +1,41 @@
-#!/bin/bash
-set -e
+#!/bin/sh
+# Installs the beacon client. This script is served by the registry itself,
+# which fills in its own address before sending it:
+#
+#   curl -fsSL https://beacon.example.com/client/install.sh | sudo sh
+#
+# The files it downloads arrive with that same address already substituted in.
+set -eu
 
-# Must be run as root to install systemd units and copy files
-if [[ $EUID -ne 0 ]]; then
+BASE_URL="${BASE_URL:-@@BASE_URL@@}"
+
+if [ "$(id -u)" -ne 0 ]; then
   echo "Error: must be run as root" >&2
   exit 1
 fi
 
-read -rp "Registry host (default: your-server.example.com): " REGISTRY_HOST
-REGISTRY_HOST="${REGISTRY_HOST:-your-server.example.com}"
+# An unsubstituted placeholder means this was not fetched from a running registry
+case "$BASE_URL" in
+  ""|@@*@@)
+    echo "Error: fetch this script from a running registry, not from a clone" >&2
+    exit 1
+    ;;
+esac
 
-cp "$(dirname "$0")/register.sh" /usr/local/bin/register.sh
-chmod +x /usr/local/bin/register.sh
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
 
-# Install the service unit, substituting in the chosen registry host
-sed "s/REGISTRY_HOST=your-server.example.com/REGISTRY_HOST=${REGISTRY_HOST}/" \
-  "$(dirname "$0")/ip-beacon.service" \
-  > /etc/systemd/system/ip-beacon.service
+for f in register.sh beacon.service beacon.timer; do
+  echo "Downloading $f"
+  curl -fsSL "${BASE_URL}/client/$f" -o "${TMP}/$f"
+done
 
-# Install the timer unit
-cp "$(dirname "$0")/ip-beacon.timer" /etc/systemd/system/ip-beacon.timer
+install -m 755 "${TMP}/register.sh" /usr/local/bin/beacon-register
+install -m 644 "${TMP}/beacon.service" /etc/systemd/system/beacon.service
+install -m 644 "${TMP}/beacon.timer" /etc/systemd/system/beacon.timer
 
 systemctl daemon-reload
+systemctl enable --now beacon.timer
+systemctl start beacon.service
 
-# Stop any currently running instance before enabling the timer
-systemctl stop ip-beacon.service 2>/dev/null || true
-systemctl enable --now ip-beacon.timer
-
-systemctl status ip-beacon.timer
-systemctl status ip-beacon.service
+systemctl --no-pager status beacon.timer beacon.service || true

@@ -1,16 +1,17 @@
 services:
-  ip-registry:
+  beacon:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ip-beacon:latest
-    container_name: ip-registry
+    image: beacon:latest
+    container_name: beacon
     volumes:
       - ./data:/app/data
     environment:
-      - PORT=8080
+      - BASE_URL=https://${DOMAIN:?DOMAIN is not set}
       - DATA_PATH=/app/data/registry.json
     restart: unless-stopped
+    stop_grace_period: 15s
     deploy:
       resources:
         limits:

@@ -1,0 +1,12 @@
+[Unit]
+Description=Register this host's IP with the beacon registry
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/beacon-register
+Environment=REGISTRY_URL=@@BASE_URL@@
+
+[Install]
+WantedBy=multi-user.target

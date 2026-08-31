@@ -2,7 +2,7 @@
 # docker-compose.yaml automatically; it is gitignored, so the base file stays
 # portable. See docker-compose.override.yaml.example.
 services:
-  ip-registry:
+  beacon:
     networks:
       - services
     labels:
