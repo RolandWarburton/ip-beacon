@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"text/tabwriter"
+	"time"
 )
 
 // Hostnames are used as registry keys and shown in the host list, so keep them
@@ -79,12 +80,37 @@ func routes(reg *registry, baseURL string) http.Handler {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		tw := tabwriter.NewWriter(w, 0, 0, 3, ' ', 0)
 		fmt.Fprint(tw, "HOST\tIP\tLAST SEEN\n")
+		now := time.Now().UTC()
 		for _, e := range reg.all() {
-			fmt.Fprintf(tw, "%s\t%s\t%s\n", e.Host, e.IP, e.UpdatedAt.Format("2006-01-02 15:04:05 UTC"))
+			fmt.Fprintf(tw, "%s\t%s\t%s (%s)\n", e.Host, e.IP,
+				e.UpdatedAt.Format("2006-01-02 15:04:05 UTC"), humanAge(now.Sub(e.UpdatedAt)))
 		}
 		tw.Flush()
 		fmt.Fprintf(w, "\nRegister a host:\n  curl -fsSL %s/client/install.sh | sudo sh\n", baseURL)
 	})
 
 	return mux
+}
+
+// humanAge renders how long ago something was seen, in the largest unit that
+// still reads sensibly. Anything in the future (clock skew on a client) is
+// reported as "just now" rather than a negative age.
+func humanAge(d time.Duration) string {
+	switch {
+	case d < time.Minute:
+		return "just now"
+	case d < time.Hour:
+		return plural(int(d.Minutes()), "minute")
+	case d < 24*time.Hour:
+		return plural(int(d.Hours()), "hour")
+	default:
+		return plural(int(d.Hours()/24), "day")
+	}
+}
+
+func plural(n int, unit string) string {
+	if n == 1 {
+		return fmt.Sprintf("1 %s ago", unit)
+	}
+	return fmt.Sprintf("%d %ss ago", n, unit)
 }
