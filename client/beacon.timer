@@ -2,7 +2,7 @@
 Description=Register this host's IP with the beacon registry every 5 minutes
 
 [Timer]
-OnBootSec=10s
+OnBootSec=30s
 OnUnitActiveSec=5min
 Unit=beacon.service
 
